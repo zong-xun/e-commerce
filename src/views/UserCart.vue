@@ -48,6 +48,8 @@
     </div>
     <Pagination :pages="pagination" @updata-page = "getproducts"></Pagination>
     <shoppingcartModel ref="shoppingcartModel" :shoppingcart="cartdata" @cart-product = "closeCartModel"></shoppingcartModel>
+    <userOrderModal ref="userOrderModal" @User-Order-Previous = "OpenCartModel" @User-Order-checkout = "closeUserOrderModal"></userOrderModal>
+    <checkoutModal ref="checkoutModal" @checkout-Previous = "OpenUserOrderModal" :checkoutdata="checkoutdata"></checkoutModal>
     <Loading :active="isLoading"></Loading>
 </template>
 <style>
@@ -73,6 +75,8 @@
 <script>
 import Pagination from '../components/Pagination.vue';
 import shoppingcartModel from '../components/shoppingcart.vue';
+import userOrderModal from '../components/userOrderModal.vue';
+import checkoutModal from '../components/checkoutModal.vue';
 export default {
     data () {
         return {
@@ -82,12 +86,15 @@ export default {
             status: {
                 loadingItem: ''
             },
-            cartdata: {}
+            cartdata: {},
+            checkoutdata: {}
         };
     },
     components: {
         Pagination,
-        shoppingcartModel
+        shoppingcartModel,
+        checkoutModal,
+        userOrderModal
     },
     methods: {
         getproducts (page) {
@@ -115,7 +122,6 @@ export default {
             const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
             this.$http.post(api, { data: productdata })
                 .then((res) => {
-                    console.log(res);
                     if (res.data.success) {
                         this.status.loadingItem = '';
                         console.log(res);
@@ -139,6 +145,46 @@ export default {
         closeCartModel () {
             const productComponent = this.$refs.shoppingcartModel;
             productComponent.hideModel();
+            this.OpenUserOrderModal();
+        },
+        OpenUserOrderModal () {
+            const productComponent = this.$refs.userOrderModal;
+            productComponent.showModel();
+        },
+        // 關閉訂購資訊和送出資料
+        closeUserOrderModal (item) {
+            // const productComponent = this.$refs.userOrderModal;
+            // productComponent.hideModel();
+            // this.OpencheckoutModal();
+            // console.log(item);
+            this.isLoading = true;
+            if (item.user.address !== '' && item.user.email !== '' && item.user.name !== '' && item.user.tel !== '') {
+                const productComponent = this.$refs.userOrderModal;
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order`;
+                this.$http.post(api, { data: item })
+                .then((res) => {
+                    if (res.data.success) {
+                        console.log(res);
+                        this.isLoading = false;
+                        productComponent.hideModel();
+                        this.OpencheckoutModal(res.data.orderId);
+                    }
+                });
+            };
+        },
+        OpencheckoutModal (id) {
+            this.isLoading = true;
+            const productComponent = this.$refs.checkoutModal;
+            productComponent.showModel();
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${id}`;
+                this.$http.get(api)
+                .then((res) => {
+                    if (res.data.success) {
+                        console.log(res);
+                        this.checkoutdata = res.data.order;
+                        this.isLoading = false;
+                    }
+                });
         }
     },
     created () {

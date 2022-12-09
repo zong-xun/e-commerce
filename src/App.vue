@@ -7,12 +7,10 @@
 .productstable tr:nth-child(odd) td{
   background:$gray-200;
 }
-// .productstable tr:nth-child(odd) td:last-child{
-//   background:none;
-// }
 </style>
 <script>
 import 'bootstrap/dist/js/bootstrap.bundle';
+// import 'bootstrap/js/dist/modal.js';
 import emitter from './methods/emitter';
 export default {
   provide () {

@@ -1,7 +1,7 @@
 <template>
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
-        ref="modal">
+        ref="modal" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
@@ -26,25 +26,32 @@
                                         <tbody v-for="item in this.shoppingcartdata.carts" :key="item.id">
                                             <tr class="tabletrmodel">
                                                 <td>
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" @click.prevent="delonecart(item.id)">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                        @click.prevent="delonecart(item.id)">
                                                         <i class="bi bi-trash3"></i>
                                                     </button>
                                                 </td>
                                                 <td>
                                                     {{item.product.title}}
-                                                    <div class="text-success" v-if="this.shoppingcartdata.final_total !== this.shoppingcartdata.total">
+                                                    <div class="text-success"
+                                                        v-if="this.shoppingcartdata.final_total !== this.shoppingcartdata.total">
                                                         已套用優惠券
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="input-group input-group-sm">
-                                                        <input type="number" class="form-control" style="text-align: center;" v-model.number="item.qty" min="1" @change="updataCart(item)" :disabled="(item.id === status.loadingItem)">
+                                                        <input type="number" class="form-control"
+                                                            style="text-align: center;" v-model.number="item.qty" min="1"
+                                                            @change="updataCart(item)"
+                                                            :disabled="(item.id === status.loadingItem)">
                                                         <div class="input-group-text">{{ item.product.unit }}</div>
                                                     </div>
                                                 </td>
                                                 <td class="text-end">
-                                                    <span v-if="this.shoppingcartdata.final_total === this.shoppingcartdata.total">{{$filters.currency(item.final_total)}}</span>
-                                                    <small class="text-success" v-if="this.shoppingcartdata.final_total !== this.shoppingcartdata.total">折扣價：{{$filters.currency(item.final_total)}}</small>
+                                                    <span
+                                                        v-if="this.shoppingcartdata.final_total === this.shoppingcartdata.total">{{$filters.currency(item.final_total)}}</span>
+                                                    <small class="text-success"
+                                                        v-if="this.shoppingcartdata.final_total !== this.shoppingcartdata.total">折扣價：{{$filters.currency(item.final_total)}}</small>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -55,14 +62,16 @@
                                             </tr>
                                             <tr v-if="this.shoppingcartdata.final_total !== this.shoppingcartdata.total">
                                                 <td colspan="3" class="text-end text-success">折扣後總計</td>
-                                                <td class="text-end text-success">{{$filters.currency(this.shoppingcartdata.final_total)}}</td>
+                                                <td class="text-end text-success">
+                                                    {{$filters.currency(this.shoppingcartdata.final_total)}}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
                                     <div class="input-group mb-3 input-group-sm">
                                         <input type="text" class="form-control" placeholder="請輸入優惠碼" v-model="coupon_code">
                                         <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" @click.prevent="addCouponCode()">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                @click.prevent="addCouponCode()">
                                                 套用優惠碼
                                             </button>
                                         </div>
