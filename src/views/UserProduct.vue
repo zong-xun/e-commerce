@@ -61,7 +61,6 @@ import shoppingcartModel from '../components/shoppingcart.vue';
                 const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/product/${this.id}`;
                     this.$http.get(api)
                     .then((res) => {
-                        console.log(res);
                         if (res.data.success) {
                             this.isLoading = false;
                             this.product = res.data.product;
@@ -78,11 +77,9 @@ import shoppingcartModel from '../components/shoppingcart.vue';
                 const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
                 this.$http.post(api, { data: productdata })
                 .then((res) => {
-                    console.log(res);
                     if (res.data.success) {
                         this.isLoading = false;
                         this.status.loadingItem = '';
-                        console.log(res);
                     }
                 });
             },
@@ -92,7 +89,6 @@ import shoppingcartModel from '../components/shoppingcart.vue';
                 const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
                     this.$http.get(api)
                     .then((res) => {
-                        console.log(res);
                         if (res.data.success) {
                             this.cartdata = res.data.data;
                             this.isLoading = false;

@@ -163,7 +163,6 @@ export default {
                 this.$http.get(api)
                 .then((res) => {
                     if (res.data.success) {
-                        console.log(res);
                         this.shoppingcartdata = res.data.data;
                     }
                 });
@@ -178,7 +177,6 @@ export default {
             };
                 this.$http.put(api, { data: cart })
                 .then((res) => {
-                    console.log(res);
                     if (res.data.success) {
                         this.getcardata();
                         this.isLoading = false;
@@ -187,6 +185,7 @@ export default {
                 });
         },
         addCouponCode () {
+            this.isLoading = true;
             const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/coupon`;
             const Codedata = {
                 data: {
@@ -198,7 +197,10 @@ export default {
                 if (res.data.success) {
                     console.log(res);
                     this.getcardata();
+                } else {
+                    this.$httpMessageState(res, '優惠券');
                 }
+                this.isLoading = false;
             });
         }
 

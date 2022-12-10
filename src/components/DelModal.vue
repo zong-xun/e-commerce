@@ -42,12 +42,10 @@ export default {
         DelProductData () {
             this.tempProduct = this.DelProductData;
             this.istitle = true;
-            console.log(this.DelProductData.title);
         },
         item () {
             this.couponData = this.item;
             this.istitle = false;
-            console.log(this.item);
         }
     },
     data () {

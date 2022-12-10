@@ -28,12 +28,10 @@ export default {
     methods: {
         logout () {
             this.isLoading = true;
-            console.log(this.isLoading);
             const api = `${process.env.VUE_APP_API}logout`;
             this.$http.post(api, this.user)
                 .then((res) => {
                     this.isLoading = false;
-                    console.log(this.isLoading);
                     if (res.data.success) {
                         this.$router.push('/');
                     }

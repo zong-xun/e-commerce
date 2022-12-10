@@ -136,7 +136,6 @@ export default {
             const productComponent = this.$refs.OpenDelModel;
                 this.$http.delete(api, { data: this.tempProduct })
                 .then((response) => {
-                    console.log(response);
                     this.isLoading = false;
                     productComponent.hideModel();
                     if (response.data.success) {

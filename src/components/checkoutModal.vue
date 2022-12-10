@@ -55,14 +55,17 @@
                                             <tr>
                                                 <th>付款狀態</th>
                                                 <td>
-                                                    <span v-if="!order.is_paid">尚未付款</span>
+                                                    <span v-if="this.newOrderData.is_paid === false">尚未付款</span>
                                                     <span v-else class="text-success">付款完成</span>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>
-                                    <div class="text-end" v-if="order.is_paid === false">
-                                        <button class="btn btn-danger">確認付款去</button>
+                                    <div class="modal-footer">
+                                        <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                            @click.prevent="$emit('checkout-close')">上一步</button> -->
+                                        <button class="btn btn-primary" v-if="this.newOrderData.is_paid === false">確認付款去</button>
+                                        <button type="button" class="btn btn-primary" v-else @click.prevent="$emit('checkout-close', paydata)">關閉</button>
                                     </div>
                                 </form>
                             </div>
@@ -70,17 +73,14 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    @click.prevent="$emit('checkout-Previous')">上一步</button>
-                <button type="button" class="btn btn-primary">確定</button>
-            </div>
         </div>
     </div>
 </div>
+<Loading :active="isLoading"></Loading>
 </template>
 <script>
         import modalMixin from '@/Mixin/modalMixin';
+        import emailjs from 'emailjs-com';
         export default {
         props: {
             checkoutdata: {
@@ -95,22 +95,77 @@
                 this.user = this.checkoutdata.user;
                 this.orderr = this.checkoutdata.products;
                 this.orderarr = Object.values(this.orderr);
-                console.log(Object.values(this.orderr));
             }
         },
         data () {
             return {
-                order: {
-                    user: {}
-                },
                 orderr: {},
                 orderarr: [],
-                user: {}
+                isLoading: false,
+                user: {},
+                newOrderData: {
+                    is_paid: false
+                },
+                paydata: {}
             };
         },
         methods: {
+            getOrder () {
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${this.checkoutdata.id}`;
+                    this.$http.get(api)
+                    .then((res) => {
+                        if (res.data.success) {
+                            this.newOrderData = res.data.order;
+                        }
+                    });
+            },
+            payOrder () {
+                this.isLoading = true;
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/pay/${this.checkoutdata.id}`;
+                this.$http.post(api)
+                    .then((res) => {
+                        if (res.data.success) {
+                            this.paydata = res;
+                            this.getOrder();
+                            this.sendEmail(this.checkoutdata);
+                            this.isLoading = false;
+                        }
+                    });
+            },
+            sendEmail (item) {
+                const products = Object.values(this.orderr);
+                let htmladd = '';
+                let imageadd = '';
+                for (let i = 0; i <= products.length - 1; i++) {
+                    for (let x = 0; x <= products[i].product.imagesUrl.length; x++) {
+                        imageadd += ` <img src="${products[i].product.imagesUrl[x]}" alt="">`;
+                    }
+                    htmladd += `
+                        <div style="font-size:30px;">
+                        名稱 : <span >${products[i].product.title}</span>
+                        </div>
+                        ${imageadd}
+                        <div style="font-size:30px;">
+                        價格 : <span>${products[i].final_total}</span>
+                        </div>
+                    `;
+                    imageadd = '';
+                };
+                const templateParams = {
+                    user: item.user.name,
+                    email: item.user.email,
+                    address: item.user.address,
+                    tel: item.user.tel,
+                    total: item.total,
+                    htmlemailtep: htmladd
+                };
+                emailjs.send('service_zong', 'template_ia2bt5u', templateParams, 'es4Xj-CcZvB4tDDAV')
+                .then(() => {
+                }, () => {
+                });
+            }
         },
-        emits: ['checkout-Previous'],
+        emits: ['checkout-close'],
         mixins: [modalMixin]
     };
     </script>

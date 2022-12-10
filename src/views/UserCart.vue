@@ -49,7 +49,7 @@
     <Pagination :pages="pagination" @updata-page = "getproducts"></Pagination>
     <shoppingcartModel ref="shoppingcartModel" :shoppingcart="cartdata" @cart-product = "closeCartModel"></shoppingcartModel>
     <userOrderModal ref="userOrderModal" @User-Order-Previous = "OpenCartModel" @User-Order-checkout = "closeUserOrderModal"></userOrderModal>
-    <checkoutModal ref="checkoutModal" @checkout-Previous = "OpenUserOrderModal" :checkoutdata="checkoutdata"></checkoutModal>
+    <checkoutModal ref="checkoutModal" @checkout-close = "ClosecheckoutModal" :checkoutdata="checkoutdata"></checkoutModal>
     <Loading :active="isLoading"></Loading>
 </template>
 <style>
@@ -62,9 +62,9 @@
         flex-wrap: wrap;
     }
 @media(max-width: 414px){
-    .tabletr td:nth-child(3),.tabletr th:nth-child(3){
+    /* .tabletr td:nth-child(3),.tabletr th:nth-child(3){
         display: none;
-    }
+    } */
     .tabletr td:nth-child(1),.tabletr th:nth-child(1){
         max-width: 100px;
         overflow-x: auto;
@@ -102,7 +102,6 @@ export default {
             const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/products?page=${page}`;
                 this.$http.get(api)
                 .then((res) => {
-                    console.log(res);
                     if (res.data.success) {
                         this.isLoading = false;
                         this.productsdata = res.data.products;
@@ -124,7 +123,6 @@ export default {
                 .then((res) => {
                     if (res.data.success) {
                         this.status.loadingItem = '';
-                        console.log(res);
                     }
                 });
         },
@@ -134,7 +132,6 @@ export default {
             const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/cart`;
                 this.$http.get(api)
                 .then((res) => {
-                    console.log(res);
                     if (res.data.success) {
                         this.cartdata = res.data.data;
                         this.isLoading = false;
@@ -164,7 +161,6 @@ export default {
                 this.$http.post(api, { data: item })
                 .then((res) => {
                     if (res.data.success) {
-                        console.log(res);
                         this.isLoading = false;
                         productComponent.hideModel();
                         this.OpencheckoutModal(res.data.orderId);
@@ -180,11 +176,16 @@ export default {
                 this.$http.get(api)
                 .then((res) => {
                     if (res.data.success) {
-                        console.log(res);
                         this.checkoutdata = res.data.order;
                         this.isLoading = false;
                     }
                 });
+        },
+        ClosecheckoutModal (paydata) {
+            console.log(paydata);
+            const productComponent = this.$refs.checkoutModal;
+            productComponent.hideModel();
+            this.$httpMessageState(paydata, '感謝您的購買');
         }
     },
     created () {

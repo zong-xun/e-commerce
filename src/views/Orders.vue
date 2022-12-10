@@ -68,7 +68,6 @@ export default {
                 this.$http.get(api)
                 .then((res) => {
                     this.isLoading = false;
-                    console.log(res);
                 });
         },
         openModal () {
