@@ -31,6 +31,7 @@ export default {
     props: ['pages'],
     methods: {
         updatePage (pagenextpre) {
+            console.log(this.pages.current_page);
             this.pagesdata = this.pages;
             if (pagenextpre === 'pre') {
                 if (this.pagesdata.has_pre) {

@@ -49,7 +49,7 @@
     <Pagination :pages="pagination" @updata-page = "getproducts"></Pagination>
     <shoppingcartModel ref="shoppingcartModel" :shoppingcart="cartdata" @cart-product = "closeCartModel"></shoppingcartModel>
     <userOrderModal ref="userOrderModal" @User-Order-Previous = "OpenCartModel" @User-Order-checkout = "closeUserOrderModal"></userOrderModal>
-    <checkoutModal ref="checkoutModal" @checkout-close = "ClosecheckoutModal" :checkoutdata="checkoutdata"></checkoutModal>
+    <checkoutModal ref="checkoutModal" @checkout-Previous="OpenUserOrderModal" @checkout-close = "ClosecheckoutModal" :checkoutdata="allData"></checkoutModal>
     <Loading :active="isLoading"></Loading>
 </template>
 <style>
@@ -87,7 +87,11 @@ export default {
                 loadingItem: ''
             },
             cartdata: {},
-            checkoutdata: {}
+            checkoutdata: {},
+            allData: {
+                product: {}
+            },
+            allDataproduct: {}
         };
     },
     components: {
@@ -139,7 +143,10 @@ export default {
                     }
                 });
         },
-        closeCartModel () {
+        closeCartModel (item) {
+            console.log(item);
+            this.allDataproduct = item;
+            console.log(this.allData);
             const productComponent = this.$refs.shoppingcartModel;
             productComponent.hideModel();
             this.OpenUserOrderModal();
@@ -150,37 +157,43 @@ export default {
         },
         // 關閉訂購資訊和送出資料
         closeUserOrderModal (item) {
-            // const productComponent = this.$refs.userOrderModal;
-            // productComponent.hideModel();
-            // this.OpencheckoutModal();
-            // console.log(item);
-            this.isLoading = true;
-            if (item.user.address !== '' && item.user.email !== '' && item.user.name !== '' && item.user.tel !== '') {
-                const productComponent = this.$refs.userOrderModal;
-                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order`;
-                this.$http.post(api, { data: item })
-                .then((res) => {
-                    if (res.data.success) {
-                        this.isLoading = false;
-                        productComponent.hideModel();
-                        this.OpencheckoutModal(res.data.orderId);
-                    }
-                });
-            };
+            // this.isLoading = true;
+            // if (item.user.address !== '' && item.user.email !== '' && item.user.name !== '' && item.user.tel !== '') {
+            //     const productComponent = this.$refs.userOrderModal;
+            //     const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order`;
+            //     this.$http.post(api, { data: item })
+            //     .then((res) => {
+            //         if (res.data.success) {
+            //             this.isLoading = false;
+            //             productComponent.hideModel();
+            //             this.OpencheckoutModal(res.data.orderId);
+            //         }
+            //     });
+            // };
+            this.allData = item.user;
+            this.allData.product = this.allDataproduct;
+            console.log(this.allData);
+            const productComponent = this.$refs.userOrderModal;
+            productComponent.hideModel();
+            this.OpencheckoutModal();
         },
-        OpencheckoutModal (id) {
-            this.isLoading = true;
+        OpencheckoutModal () {
             const productComponent = this.$refs.checkoutModal;
             productComponent.showModel();
-                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${id}`;
-                this.$http.get(api)
-                .then((res) => {
-                    if (res.data.success) {
-                        this.checkoutdata = res.data.order;
-                        this.isLoading = false;
-                    }
-                });
         },
+        // OpencheckoutModal (id) {
+        //     this.isLoading = true;
+        //     const productComponent = this.$refs.checkoutModal;
+        //     productComponent.showModel();
+        //         const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${id}`;
+        //         this.$http.get(api)
+        //         .then((res) => {
+        //             if (res.data.success) {
+        //                 this.checkoutdata = res.data.order;
+        //                 this.isLoading = false;
+        //             }
+        //         });
+        // },
         ClosecheckoutModal (paydata) {
             console.log(paydata);
             const productComponent = this.$refs.checkoutModal;

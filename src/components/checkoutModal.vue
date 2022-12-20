@@ -13,7 +13,7 @@
                     <div class="container-fluid">
                         <div class="row mt-4">
                             <div>
-                                <form class="col" @submit.prevent="payOrder">
+                                <form class="col" @submit.prevent="Orderapi">
                                     <table class="table align-middle">
                                         <thead>
                                             <th>品名</th>
@@ -21,7 +21,7 @@
                                             <th style="text-align: center;">單價</th>
                                         </thead>
                                         <tbody>
-                                            <tr v-for=" (item, index) in orderarr" :key="index">
+                                            <tr v-for=" (item, index) in this.checkoutdata.product.carts" :key="index">
                                                 <td>{{ item.product.title }}</td>
                                                 <td>{{ item.qty }}/{{ item.product.unit }}</td>
                                                 <td class="text-end">{{ item.final_total }}</td>
@@ -30,7 +30,7 @@
                                         <tfoot>
                                             <tr>
                                                 <td colspan="2" class="text-end">總計</td>
-                                                <td class="text-end">{{ this.checkoutdata.total }}</td>
+                                                <td class="text-end">{{ this.checkoutdata.product.final_total }}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -38,19 +38,19 @@
                                         <tbody>
                                             <tr>
                                                 <th width="100">Email</th>
-                                                <td>{{ user.email }}</td>
+                                                <td>{{ this.checkoutdata.email }}</td>
                                             </tr>
                                             <tr>
                                                 <th>姓名</th>
-                                                <td>{{ user.name }}</td>
+                                                <td>{{ this.checkoutdata.name }}</td>
                                             </tr>
                                             <tr>
                                                 <th>收件人電話</th>
-                                                <td>{{ user.tel }}</td>
+                                                <td>{{ this.checkoutdata.tel }}</td>
                                             </tr>
                                             <tr>
                                                 <th>收件人地址</th>
-                                                <td>{{ user.address }}</td>
+                                                <td>{{ this.checkoutdata.address }}</td>
                                             </tr>
                                             <tr>
                                                 <th>付款狀態</th>
@@ -62,10 +62,10 @@
                                         </tbody>
                                     </table>
                                     <div class="modal-footer">
-                                        <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                            @click.prevent="$emit('checkout-close')">上一步</button> -->
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                            @click.prevent="$emit('checkout-Previous')" v-if="this.newOrderData.is_paid === false">上一步</button>
                                         <button class="btn btn-primary" v-if="this.newOrderData.is_paid === false">確認付款去</button>
-                                        <button type="button" class="btn btn-primary" v-else @click.prevent="$emit('checkout-close', paydata)">關閉</button>
+                                        <button type="button" class="btn btn-primary" v-else @click.prevent="$emit('checkout-close', paydata)" @click="rest">關閉</button>
                                     </div>
                                 </form>
                             </div>
@@ -92,9 +92,10 @@
         },
         watch: {
             checkoutdata () {
-                this.user = this.checkoutdata.user;
-                this.orderr = this.checkoutdata.products;
-                this.orderarr = Object.values(this.orderr);
+                // console.log(this.checkoutdata);
+                // this.user = this.checkoutdata.user;
+                // this.orderr = this.checkoutdata.products;
+                // this.orderarr = Object.values(this.orderr);
             }
         },
         data () {
@@ -106,34 +107,47 @@
                 newOrderData: {
                     is_paid: false
                 },
+                form: {
+                    user: {
+                        name: '',
+                        email: '',
+                        tel: '',
+                        address: ''
+                    },
+                    message: ''
+                },
                 paydata: {}
             };
         },
         methods: {
-            getOrder () {
-                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${this.checkoutdata.id}`;
+            getOrder (id) {
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order/${id}`;
                     this.$http.get(api)
                     .then((res) => {
                         if (res.data.success) {
+                            console.log(res);
                             this.newOrderData = res.data.order;
                         }
                     });
             },
-            payOrder () {
+            payOrder (id) {
                 this.isLoading = true;
-                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/pay/${this.checkoutdata.id}`;
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/pay/${id}`;
                 this.$http.post(api)
                     .then((res) => {
                         if (res.data.success) {
+                            console.log(res);
                             this.paydata = res;
-                            this.getOrder();
+                            this.getOrder(id);
                             this.sendEmail(this.checkoutdata);
                             this.isLoading = false;
                         }
                     });
             },
             sendEmail (item) {
-                const products = Object.values(this.orderr);
+                console.log(item);
+                const products = Object.values(item.product.carts);
+                console.log(products);
                 let htmladd = '';
                 let imageadd = '';
                 for (let i = 0; i <= products.length - 1; i++) {
@@ -152,17 +166,39 @@
                     imageadd = '';
                 };
                 const templateParams = {
-                    user: item.user.name,
-                    email: item.user.email,
-                    address: item.user.address,
-                    tel: item.user.tel,
-                    total: item.total,
+                    user: item.name,
+                    email: item.email,
+                    address: item.address,
+                    tel: item.tel,
+                    total: item.product.final_total,
                     htmlemailtep: htmladd
                 };
                 emailjs.send('service_zong', 'template_ia2bt5u', templateParams, 'es4Xj-CcZvB4tDDAV')
                 .then(() => {
                 }, () => {
                 });
+            },
+            Orderapi () {
+                this.isLoading = true;
+                console.log(this.checkoutdata);
+                this.form.user.name = this.checkoutdata.name;
+                this.form.user.email = this.checkoutdata.email;
+                this.form.user.tel = this.checkoutdata.tel;
+                this.form.user.address = this.checkoutdata.address;
+                this.form.message = this.checkoutdata.message;
+                const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/order`;
+                this.$http.post(api, { data: this.form })
+                .then((res) => {
+                    if (res.data.success) {
+                        console.log(res);
+                        this.payOrder(res.data.orderId);
+                        this.isLoading = false;
+                    }
+                });
+            },
+            rest () {
+                console.log('1');
+                this.newOrderData.is_paid = false;
             }
         },
         emits: ['checkout-close'],

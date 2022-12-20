@@ -8,7 +8,7 @@
                 <th>購買款項</th>
                 <th>應付金額</th>
                 <th>是否付款</th>
-                <th>編輯</th>
+                <!-- <th>編輯</th> -->
             </tr>
         </thead>
         <tbody>
@@ -28,23 +28,24 @@
                     <td>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" :id="`paidSwitch${item.id}`"
-                                v-model="item.is_paid" @change="updatePaid(item)">
-                            <label class="form-check-label" :for="`paidSwitch${item.id}`">
+                                v-model="item.is_paid" @change="updatePaid(item)" disabled :style="[stylecss]">
+                            <label class="form-check-label" :for="`paidSwitch${item.id}`" style="opacity: 1;font-weight: bold;">
                                 <span v-if="item.is_paid">已付款</span>
                                 <span v-else>未付款</span>
                             </label>
                         </div>
                     </td>
-                    <td>
+                    <!-- <td>
                         <div class="btn-group">
                             <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">檢視</button>
                             <button class="btn btn-outline-danger btn-sm" @click="openDelOrderModal(item)">刪除</button>
                         </div>
-                    </td>
+                    </td> -->
                 </tr>
             </template>
         </tbody>
     </table>
+    <Pagination :pages="pagination" @updata-page = "getOrders"></Pagination>
     <!-- <OrderModal :order="tempOrder" ref="orderModal" @update-paid="updatePaid"></OrderModal>
     <DelModal :item="tempOrder" ref="delModal" @del-item="delOrder"></DelModal>
     <Pagination :pages="pagination" @emit-pages="getOrders"></Pagination> -->
@@ -53,20 +54,30 @@
 // import DelModal from '@/components/DelModal.vue';
 // import OrderModal from '@/components/orderModal.vue';
 // import Pagination from '@/components/Pagination.vue';
-
+import Pagination from '../components/Pagination.vue';
 export default {
     data () {
         return {
-            orders: {}
+            orders: {},
+            pagination: {},
+            stylecss: {
+                opacity: 1
+            },
+            isLoading: false
         };
     },
-
+    components: {
+        Pagination
+    },
     methods: {
-        getOrders () {
+        getOrders (page = 1) {
             this.isLoading = true;
-            const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/orders`;
+            const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/orders?page=${page}`;
                 this.$http.get(api)
                 .then((res) => {
+                    this.orders = res.data.orders;
+                    this.pagination = res.data.pagination;
+                    console.log(res.data.pagination);
                     this.isLoading = false;
                 });
         },
@@ -80,7 +91,7 @@ export default {
         }
     },
     created () {
-        // this.getOrders();
+        this.getOrders();
     }
 };
 </script>
